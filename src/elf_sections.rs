@@ -177,6 +177,8 @@ impl ElfSection {
         self.flags().contains(ElfSectionFlags::ALLOCATED)
     }
 
+    pub fn offset(&self) -> u64 { self.get().offset() }
+
     fn get(&self) -> &ElfSectionInner {
         match self.entry_size {
             40 => unsafe { &*(self.inner as *const ElfSectionInner32) },
@@ -204,6 +206,8 @@ trait ElfSectionInner {
     fn addr(&self) -> u64;
 
     fn size(&self) -> u64;
+
+    fn offset(&self) -> u64;
 }
 
 impl ElfSectionInner for ElfSectionInner32 {
@@ -226,6 +230,8 @@ impl ElfSectionInner for ElfSectionInner32 {
     fn size(&self) -> u64 {
         self.size.into()
     }
+
+    fn offset(&self) -> u64 { self.offset.into() }
 }
 
 impl ElfSectionInner for ElfSectionInner64 {
@@ -248,6 +254,8 @@ impl ElfSectionInner for ElfSectionInner64 {
     fn size(&self) -> u64 {
         self.size
     }
+
+    fn offset(&self) -> u64 { self.offset }
 }
 
 #[derive(PartialEq, Eq, Debug, Copy, Clone)]
