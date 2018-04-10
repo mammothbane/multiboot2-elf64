@@ -87,21 +87,6 @@ pub struct ElfSection {
 
 #[derive(Debug)]
 #[repr(C, packed)]
-struct ElfSectionInner32 {
-    name_index: u32,
-    typ: u32,
-    flags: u32,
-    addr: u32,
-    offset: u32,
-    size: u32,
-    link: u32,
-    info: u32,
-    addralign: u32,
-    entry_size: u32,
-}
-
-#[derive(Debug)]
-#[repr(C, packed)]
 struct ElfSectionInner64 {
     name_index: u32,
     typ: u32,
@@ -179,9 +164,8 @@ impl ElfSection {
 
     pub fn offset(&self) -> u64 { self.get().offset() }
 
-    fn get(&self) -> &ElfSectionInner {
+    fn get(&self) -> &ElfSectionInner64 {
         match self.entry_size {
-            40 => unsafe { &*(self.inner as *const ElfSectionInner32) },
             64 => unsafe { &*(self.inner as *const ElfSectionInner64) },
             _ => panic!(),
         }
@@ -189,52 +173,13 @@ impl ElfSection {
 
     unsafe fn string_table(&self) -> *const u8 {
         match self.entry_size {
-            40 => (*(self.string_section as *const ElfSectionInner32)).addr as *const _,
             64 => (*(self.string_section as *const ElfSectionInner64)).addr as *const _,
             _ => panic!(),
         }
     }
 }
 
-trait ElfSectionInner {
-    fn name_index(&self) -> u32;
-
-    fn typ(&self) -> u32;
-
-    fn flags(&self) -> u64;
-
-    fn addr(&self) -> u64;
-
-    fn size(&self) -> u64;
-
-    fn offset(&self) -> u64;
-}
-
-impl ElfSectionInner for ElfSectionInner32 {
-    fn name_index(&self) -> u32 {
-        self.name_index
-    }
-
-    fn typ(&self) -> u32 {
-        self.typ
-    }
-
-    fn flags(&self) -> u64 {
-        self.flags.into()
-    }
-
-    fn addr(&self) -> u64 {
-        self.addr.into()
-    }
-
-    fn size(&self) -> u64 {
-        self.size.into()
-    }
-
-    fn offset(&self) -> u64 { self.offset.into() }
-}
-
-impl ElfSectionInner for ElfSectionInner64 {
+impl ElfSectionInner64 {
     fn name_index(&self) -> u32 {
         self.name_index
     }
